@@ -1,0 +1,325 @@
+{
+  "name": "HR Onboarding Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "167Zv7Ssgp86y8uuiqe_b-CI8DBgf8eUC",
+          "mode": "list",
+          "cachedResultName": "HR Documents",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/167Zv7Ssgp86y8uuiqe_b-CI8DBgf8eUC"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b375044e-1dcf-4ba5-91bd-f65ca7bfe431",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "hV8x0q47giPx6Haw",
+          "name": "adenikinjunicholas@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d867c5b7-feeb-408c-9e4c-8eea7b1efbc8",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "hV8x0q47giPx6Haw",
+          "name": "adenikinjunicholas@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "hr-onboarding",
+          "mode": "list",
+          "cachedResultName": "hr-onboarding"
+        },
+        "options": {
+          "clearNamespace": false,
+          "pineconeNamespace": "hr-documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        -16
+      ],
+      "id": "24e40ae2-0017-43f5-a3b8-5c70a940133a",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "7wOxqyZCZg0hZGHW",
+          "name": "PineconeApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        416,
+        160
+      ],
+      "id": "55d0965d-d3f8-481d-ac66-b6075d185010",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NtcCXQxLGeZzj4z1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        192
+      ],
+      "id": "7e444278-7d90-427d-9fbc-c375d394260d",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        784,
+        -5.330833033807295
+      ],
+      "id": "67f1bc5d-6fc5-4b14-ac6d-1da5014a5792",
+      "name": "When chat message received",
+      "webhookId": "5f768fea-b079-43d1-8006-8c097759bc68"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistantYou are a helpful HR assistant for TechHaven Solutions Ltd. \nAnswer employee questions based only on the company's HR documents provided to you. \nBe professional, friendly and concise. \nIf you don't find the answer in the documents, say \"I don't have that information in our HR documents, please contact HR at hr@techhaven.com\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        992,
+        0
+      ],
+      "id": "ced1938b-ae74-4c89-8ffe-83270acdbcae",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        864,
+        208
+      ],
+      "id": "389b1435-851d-40a1-9414-443d85a56f4b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NtcCXQxLGeZzj4z1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "hr-onboarding",
+          "mode": "list",
+          "cachedResultName": "hr-onboarding"
+        },
+        "options": {
+          "pineconeNamespace": "hr-documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1168,
+        208
+      ],
+      "id": "9d321f66-a02b-466c-8f0b-40e994fe854f",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "7wOxqyZCZg0hZGHW",
+          "name": "PineconeApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        304
+      ],
+      "id": "43ad219b-fc8c-45c9-a373-bec11f71fcd4",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NtcCXQxLGeZzj4z1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ee27c252-7b19-47ce-a222-75dd9dc4867e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f393ed60491ebc430373bd1ac7300937d05d513490f8ef87a076fdbdff12fd86"
+  },
+  "id": "PJZ0MhEVrScWUyPd",
+  "tags": []
+}
